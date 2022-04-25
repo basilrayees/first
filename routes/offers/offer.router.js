@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./offer.controller')
 const path = require('path');
+const {validateBody, schemas} = require('../middleware/validator');
 
 
 const multer = require('multer');
@@ -30,7 +31,7 @@ router.get('/offer/test', function (req, res) {
     res.send('offer-test')
 });
 
-router.post('/offer/addOffer',upload.single("image"), controller.addOffer)
+router.post('/offer/addOffer',upload.single("image"),validateBody(schemas.offerSchema), controller.addOffer)
 // router.get('/offer/allOffers', controller.getAllOffers)
 router.get('/offer/offers', controller.getOffers)
 router.delete('/offer/deletOffer/:id', controller.deleteOffer)

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('./store.controller')
-const {validateBody, schemas} = require('../middleware/validator');
+const { validateBody, schemas } = require('../middleware/validator');
 const {upload} = require('./store.controller')
 
 

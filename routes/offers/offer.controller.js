@@ -515,8 +515,9 @@ const updateOffer = async (req, res) => {
                 ]
             })
             const offerImage = await targetOffer.image.slice(51)
-            deleteimage("offers", offerImage)
             const image = await uploadFile(req.file, "offers")
+            if(image) { deleteimage("offers", offerImage) }
+            
             const updateOffer = await offer.update({
                 image: image.Location,
                 title: req.body.title,
@@ -592,8 +593,8 @@ const updateOffer = async (req, res) => {
             })
 
             const offerImage = await targetOffer.image.slice(51)
-            deleteimage("offers", offerImage)
             const image = await uploadFile(req.file, "offers")
+            if(image) { deleteimage("offers", offerImage) }
             const updateOffer = await offer.update({
                 image: image.Location,
                 title: req.body.title,
@@ -644,8 +645,9 @@ const updateOffer = async (req, res) => {
                 ]
             })
             const offerImage = await targetOffer.image.slice(51)
-            deleteimage("offers", offerImage)
+         
             const image = await uploadFile(req.file, "offers")
+            if(image) { deleteimage("offers", offerImage)}
             const updateOffer = await offer.update({
                 image: image.Location,
                 title: req.body.title,
@@ -675,10 +677,11 @@ const updateOffer = async (req, res) => {
         }
         else {
             const offerImage = await targetOffer.image.slice(51)
-             deleteimage("offers", offerImage)
+             
             // res.send(offerImage)
 
             const image = await uploadFile(req.file, "offers")
+            if(image){ deleteimage("offers", offerImage) }
             const updateOffer = await offer.update({
                 image: image.Location,
                 title: req.body.title,

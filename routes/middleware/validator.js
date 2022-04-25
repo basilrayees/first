@@ -22,7 +22,7 @@ const placeSchema = Joi.object({
 
 const storeSchema = Joi.object({
     storeName: Joi.string().required(),
-    storeUrl:Joi.string().required(),
+    storeUrl: Joi.string().required(),
     ownerName: Joi.string().required(),
     email: Joi.string(),
     phoneNumber: Joi.number().required(),
@@ -31,14 +31,44 @@ const storeSchema = Joi.object({
     lng: Joi.number().required(),
     address: Joi.string().required(),
     logo: Joi.any()
-    .meta({swaggerType: 'file'})
-    .optional()
-    .allow('')
-    .description('image file'),
+        .meta({ swaggerType: 'file' })
+        .optional()
+        .allow('')
+        .description('image file'),
     placeId: Joi.number().required(),
     categoryId: Joi.required()
 
 })
+
+const bannerSchema = Joi.object({
+    bannerImage: Joi.any()
+        .meta({ swaggerType: 'file' })
+        .optional()
+        .allow(''),
+        // .required(),
+
+    title: Joi.string().required(),
+    bannerCategoryId: Joi.number().required(),
+    placeId: Joi.number().required(),
+    sortOrder: Joi.number().required()
+})
+
+const offerSchema = Joi.object({
+    image: Joi.any()
+    .meta({ swaggerType: 'file' })
+    .optional()
+    .allow(''),
+    title: Joi.string().required(),
+    description: Joi.string().required(),
+    featuredOffer: Joi.boolean(),
+    sponserOffer: Joi.boolean(),
+    slot: Joi.number(),
+    startDate: Joi.date().required(),
+    endDate: Joi.date().required(),
+    storeId: Joi.number().required(),
+    catogeryId: Joi.number().required(),
+})
+
 // const loginSchema = Joi.object({
 //     mobile: Joi.string().required().min(10).max(10),
 //     pin: Joi.number().required().min(4).max(4),
@@ -51,7 +81,9 @@ module.exports = {
         countrySchema,
         stateSchema,
         placeSchema,
-        storeSchema
+        storeSchema,
+        bannerSchema,
+        offerSchema
         // loginSchema: loginSchema
     },
     validateBody: (schema) => {

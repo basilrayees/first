@@ -5,7 +5,7 @@ const store_has_category = db.store_has_category
 const category = db.category
 const path = require('path');
 const multer = require('multer');
-const { uploadFile } = require('../middleware/s3');
+const { uploadFile, deleteimage } = require('../middleware/s3');
 
 const storage = multer.diskStorage({
     // destination: function(req, file, callback){
@@ -105,6 +105,17 @@ const getStoreById = async (req, res) => {
 
 
 const deleteStore = async (req, res) => {
+
+    const targetStore = await store.findOne({
+        where:{
+            id: req.params.id
+        }
+    })
+    
+    const storeLogo = targetStore.logo.slice(55)
+
+    if(storeLogo){ deleteimage("store_logo", storeLogo) }
+
     store_has_category.destroy({
         where: {
             storeId: req.params.id
@@ -119,7 +130,7 @@ const deleteStore = async (req, res) => {
     )
 
         .then(() => res.send('succcess'))
-        .catch(err => res.send(err))
+        .catch(err => res.send(err))    
 }
 
 const updateStore = async (req, res) =>{
@@ -136,8 +147,22 @@ const updateStore = async (req, res) =>{
     //     console.log(result[0]);
     //     res.send( result[0])
     // })
+
+    const targetStore = await store.findOne({
+        where:{
+            id : req.params.id
+        }
+    })
+    // console.log( {"1" :targetStore.logo});
+    const LogoImage = await targetStore.logo.slice(55)
+    
+    // res.send(targetStore);
+  
+
     const logoImage = await uploadFile(req.file,"store_logo")
-    store.update({
+    if (logoImage || LogoImage) { deleteimage("store_logo", LogoImage) } 
+   
+    store.update({ 
         storeName: req.body.storeName,
         ownerName: req.body.ownerName,
         email: req.body.email,
@@ -170,30 +195,19 @@ const updateStore = async (req, res) =>{
         }
             
         )
-        
-        // const arr1 = []
-        // const arr2 = req.body.categoryId
-        // cat.forEach(element => {
-        //     arr1.push(element.categoryId)
-          
-        // });
-        // console.log(arr1);
-        // console.log(arr2);
-       
-        // function diffArray(arr1, arr2) {
-        //     return arr1
-        //       .concat(arr2)
-        //       .filter(item => !arr1.includes(item) || !arr2.includes(item));
-        //   }
-        //  const diff = (diffArray(arr2, arr1));
-        //  console.log(diff);
-       
+               
     }).then((result)=>{
         res.send({result:"success"})
     })
     .catch(err =>{
         res.send(err)
     })
+
+
+
+
+
+
         
         // categoryID.forEach( async element => {
         //     const cat = await store_has_category.findOne({
@@ -228,15 +242,7 @@ const updateStore = async (req, res) =>{
   
 }
 
-// state.update(
-//     { 
-//         name:req.body.name ,countryId :req.body.countryId 
-//     },
-//     { where: {
-//          id:req.params.id 
-//         }  }
-    
-//     ).then(() => res.send('succcess'))
+
 
 
 module.exports = {

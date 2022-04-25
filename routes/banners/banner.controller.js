@@ -28,12 +28,12 @@ const upload = multer({
 const addBanner = async (req, res) => {
 
     if (req.body.sortOrder > 8) return res.status(400).send({
-        Message:[
+        Message: [
             "sortOrder Limit is 8"
         ]
     })
     const alreadyExists = await banner.findAll({
-        where:{
+        where: {
             sortOrder: req.body.sortOrder,
             placeId: req.body.placeId,
             bannerCategoryId: req.body.bannerCategoryId
@@ -41,26 +41,27 @@ const addBanner = async (req, res) => {
     })
 
     const bannerCount = await banner.findAll({
-        where:{
+        where: {
             placeId: req.body.placeId,
             bannerCategoryId: req.body.bannerCategoryId
         }
     })
 
-    if(bannerCount.length >= 8) return res.status(400).send({
-        Message:[
+    if (bannerCount.length >= 8) return res.status(400).send({
+        Message: [
             "limit in this is place is over"
         ]
     })
     // console.log(alreadyExists);
-    if(alreadyExists.length != 0)return res.status(409).send({
-        Message:[
+    if (alreadyExists.length != 0) return res.status(409).send({
+        Message: [
             "sort Order is already exist in this place"
         ]
     })
 
     // res.send("hello")
     const bannerImage = await uploadFile(req.file, "banners")
+    console.log(req.body.title);
     banner.create({
         bannerImage: bannerImage.Location,
         title: req.body.title,
@@ -201,28 +202,28 @@ const getBanners = async (req, res) => {
     const skip = (page - 1) * size;
 
     try {
-    const banners = await bannerCategory.findAndCountAll({
-        attributes:['id', 'name'],
-        include: [{
-            model: banner,
-            attributes: ['id', 'bannerImage', 'title', 'sortOrder', 'bannerCategoryId', 'placeId'],
-            where: {
-                placeId: min.id
-            },
-            required: false
-            // through: { attributes: [] }
-        }],
-        
-        offset: skip, limit: limit
-    })
+        const banners = await bannerCategory.findAndCountAll({
+            attributes: ['id', 'name'],
+            include: [{
+                model: banner,
+                attributes: ['id', 'bannerImage', 'title', 'sortOrder', 'bannerCategoryId', 'placeId'],
+                where: {
+                    placeId: min.id
+                },
+                required: false
+                // through: { attributes: [] }
+            }],
 
-    // console.log(cords);
-    // console.log(newCords);
-    // console.log(min);
-    const temmp = banners.rows
+            offset: skip, limit: limit
+        })
+
+        // console.log(cords);
+        // console.log(newCords);
+        // console.log(min);
+        const temmp = banners.rows
 
 
-    
+
         res.send({
             data: banners,
             current_page: parseInt(page),
@@ -230,44 +231,190 @@ const getBanners = async (req, res) => {
         })
 
     } catch (error) {
-       res.send(error)
+        res.send(error)
     }
 }
 
 
 const updateBanner = async (req, res) => {
-     
+
     const targetBanner = await banner.findOne({
-        where:{
+        where: {
             id: req.params.id
         }
     })
-    res.send(targetBanner)
-
+    if (req.body.sortOrder > 8) return res.status(400).send({
+        Message: [
+            "sortOrder Limit is 8"
+        ]
+    })
     
 
-    //  const bannerImage = await uploadFile(req.file, "banners")
-    // banner.update({
-    //     bannerImage: bannerImage.Location,
-    //     title: req.body.title,
-    //     bannerCategoryId: req.body.bannerCategoryId,
-    //     placeId: req.body.placeId,
-    //     sortOrder: req.body.sortOrder
-    // },
-    //     {
-    //         where: {
-    //             id: req.params.id
-    //         }
-    //     }
-    // ).then(() => {
-    //     res.send({
-    //         data: {
-    //             succss: true
-    //         }
-    //     })
-    // }).catch(err => {
-    //     res.send(err)
-    // })
+    if (targetBanner.sortOrder != req.body.sortOrder && targetBanner.bannerCategoryId != req.body.bannerCategoryId || targetBanner.placeId != req.body.placeId) {
+        const sortExist = await banner.findAll({
+            where: {
+                sortOrder: req.body.sortOrder,
+                placeId: req.body.placeId,
+                bannerCategoryId: req.body.bannerCategoryId
+            }
+        })
+        const bannerLimit = await banner.findAll({
+            where: {
+                placeId: req.body.placeId,
+                bannerCategoryId: req.body.bannerCategoryId
+            }
+        })
+        // res.send(sortExist)
+        if (sortExist.length != 0) return res.status(400).send({
+            Message: [
+                "sort order already exist"
+            ]
+        })
+
+        if (bannerLimit.length >= 8) return res.status(400).send({
+            Message: [
+                "sort order limit is over in this polace"
+            ]
+        })
+
+     
+        try {
+            const imageB = targetBanner.bannerImage.slice(52)
+            const bannerImage = await uploadFile(req.file, "banners")
+            if (bannerImage) { deleteimage("banners", imageB) }
+            const result = await banner.update({
+                bannerImage: bannerImage.Location,
+                title: req.body.title,
+                bannerCategoryId: req.body.bannerCategoryId,
+                placeId: req.body.placeId,
+                sortOrder: req.body.sortOrder
+            },
+                {
+                    where: {
+                        id: req.params.id
+                    }
+                }
+            )
+            
+        } catch (error) {
+            res.send(error)
+        }
+
+
+    }
+
+    // /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if (targetBanner.sortOrder != req.body.sortOrder) {
+        const sortExist = await banner.findAll({
+            where: {
+                sortOrder: req.body.sortOrder,
+                placeId: req.body.placeId,
+                bannerCategoryId: req.body.bannerCategoryId
+            }
+        })
+        if (sortExist.length != 0) return res.status(400).send({
+            Message: [
+                "sort order already exist"
+            ]
+        })
+        const imageB = targetBanner.bannerImage.slice(52)
+        const bannerImage = await uploadFile(req.file, "banners")
+        if (bannerImage) { deleteimage("banners", imageB) }
+        try {
+            const result = await banner.update({
+                bannerImage: bannerImage.Location,
+                title: req.body.title,
+                bannerCategoryId: req.body.bannerCategoryId,
+                placeId: req.body.placeId,
+                sortOrder: req.body.sortOrder
+            },
+                {
+                    where: {
+                        id: req.params.id
+                    }
+                }
+            )
+        } catch (error) {
+            res.send(error)
+        }
+       
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if (targetBanner.bannerCategoryId != req.body.bannerCategoryId || targetBanner.placeId != req.body.placeId) {
+        const bannerLimit = await banner.findAll({
+            where: {
+                placeId: req.body.placeId,
+                bannerCategoryId: req.body.bannerCategoryId
+            }
+        })
+        if (bannerLimit.length >= 8) return res.status(400).send({
+            Message: [  
+                "sort order limit is over in this place"
+            ]
+        })
+
+        const imageB = await targetBanner.bannerImage.slice(52)
+        const bannerImage = await uploadFile(req.file, "banners")
+        if (bannerImage) { deleteimage("banners", imageB) }
+        banner.update({
+            bannerImage: bannerImage.Location,
+            title: req.body.title,
+            bannerCategoryId: req.body.bannerCategoryId,
+            placeId: req.body.placeId,
+            sortOrder: req.body.sortOrder
+        },
+            {
+                where: {
+                    id: req.params.id
+                }
+            }
+        ).then(() => {
+            res.send({
+                data: {
+                    succss: true
+                }
+            })
+        }).catch(err => {
+            res.send(err)
+        })
+
+    }
+
+
+    // res.send(targetBanner)
+    else {
+        const imageB = targetBanner.bannerImage.slice(52)
+
+        const bannerImage = await uploadFile(req.file, "banners")
+        if (bannerImage) { deleteimage("banners", imageB) }
+        banner.update({
+            bannerImage: bannerImage.Location,
+            title: req.body.title,
+            bannerCategoryId: req.body.bannerCategoryId,
+            placeId: req.body.placeId,
+            sortOrder: req.body.sortOrder
+        },
+            {
+                where: {
+                    id: req.params.id
+                }
+            }
+        ).then(() => {
+            res.send({
+                data: {
+                    succss: true
+                }
+            })
+        }).catch((err) => {
+            res.send(err)
+        })
+
+    }
+
 }
 
 const deleteBanner = async (req, res) => {
@@ -291,7 +438,7 @@ const deleteBanner = async (req, res) => {
     // res.send(imageName)
 
     try {
-        deleteimage("banners" ,imageName)
+        deleteimage("banners", imageName)
 
         const del = await banner.destroy({
             where: {
@@ -299,8 +446,8 @@ const deleteBanner = async (req, res) => {
             }
         })
         res.send({
-            data:{
-                succss:true
+            data: {
+                succss: true
             }
         })
 
@@ -326,5 +473,5 @@ module.exports = {
     deleteBanner,
     upload,
     distance,
-    
+
 }
